@@ -4,6 +4,10 @@ import java.util.Scanner;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.Session;
 import javax.naming.InitialContext;
 
 public class TesteConsumidor {
@@ -16,7 +20,17 @@ public class TesteConsumidor {
 		//imports do package javax.jms
 		ConnectionFactory factory = (ConnectionFactory) context.lookup("ConnectionFactory");
 		Connection connection = factory.createConnection();
+		connection.start();
 		
+		Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+		
+		Destination fila = (Destination) context.lookup("financeiro");
+		MessageConsumer consumer = session.createConsumer(fila);
+		
+		Message message = consumer.receive(2000);
+		
+		System.out.println("Recebendo msg: " + message);
+				
 		new Scanner(System.in).nextLine();
 		
 		connection.close();
