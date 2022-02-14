@@ -19,47 +19,37 @@ public class TesteConsumidorFila {
 	public static void main(String[] args) throws Exception {
 		
 		InitialContext context = new InitialContext();
-		
-		//imports do package javax.jms
 		ConnectionFactory factory = (ConnectionFactory) context.lookup("ConnectionFactory");
-		Connection connection = factory.createConnection();
-		connection.start();
 		
-		Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+		Connection connection = factory.createConnection(); 
+		connection.start();
+		Session session = connection.createSession(true, Session.SESSION_TRANSACTED);
 		
 		Destination fila = (Destination) context.lookup("financeiro");
-		MessageConsumer consumer = session.createConsumer(fila);
+		MessageConsumer consumer = session.createConsumer(fila );
 		
-		//Tratador de mensagem
 		consumer.setMessageListener(new MessageListener() {
-			
+
 			@Override
 			public void onMessage(Message message) {
-				//Subinterfaces da Message
-				TextMessage textMessage = (TextMessage) message;
+
+				TextMessage textMessage = (TextMessage)message;
 				try {
-					System.out.println("Recebendo msg: " + textMessage.getText());
+					//message.acknowledge();
+					System.out.println(textMessage.getText());
+					session.rollback();
 				} catch (JMSException e) {
 					e.printStackTrace();
 				}
 			}
+			
 		});
 		
-		//Message message = consumer.receive(2000);
-		
+				
 		new Scanner(System.in).nextLine();
 		
+		session.close();
 		connection.close();
 		context.close();
 	}
-
 }
-
-
-/**
- * Criaremos uma conexão. Porém, da onde vem a nossa ConnectionFactory? O MOM vai te fornecer! 
- * A ideia é que quando o MOM é inicializado, que ele ja disponibilize essa conexão dentro de um registro. 
- * Com isso, precisamos apenas pegar essa conexão dentro de um registro, e esse é o JNDI. O nome utilizado no 
- * lookup é apresentado na documentação do MOM.
- * 
- */
